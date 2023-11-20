@@ -12,6 +12,9 @@
   </head>
 
   <body>
+    <hearder>
+      <%- include("partials/_header"); %>
+    </hearder>
     <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
@@ -19,8 +22,6 @@
         <p class="card-text">
           Short URL ID: <a href="/u/<%= id %>"><%= id %></a>
         </p>
-        <p>Long URL: <%= longURL %></p>
-        <p>Shortened URL: <a href="#">short</a></p>
       </div>
       <div class="card-footer text-muted"></div>
     </div>
