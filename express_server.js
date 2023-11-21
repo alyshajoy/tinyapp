@@ -36,14 +36,9 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
   console.log(req.body);
   urlDatabase[generateRandomString()] = req.body.longURL;
-  ??????????
+  // I think this is where I need to add code, but I have no idea what!
   res.render("/urls/:id");
 });
-
-// const urlDatabase = {
-//   "b2xVn2": "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com"
-// };
 
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id]};
