@@ -35,14 +35,20 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body);
-  urlDatabase[generateRandomString()] = req.body.longURL;
-  // I think this is where I need to add code, but I have no idea what!
-  res.render("/urls/:id");
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = req.body.longURL;
+  res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id]};
+  console.log("req.params", req.params);
   res.render("urls_show", templateVars);
+});
+
+app.get("/u/:id", (req, res) => {
+  const longURL = req.params.id;
+  res.redirect(`${urlDatabase[longURL]}`);
 });
 
 app.get("/urls.json", (req, res) => {
