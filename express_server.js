@@ -37,7 +37,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-// grab data from client's form submission
+// endpoint to create new shortURL
 app.post("/urls", (req, res) => {
   // create short URL to give to client
   const shortURL = generateRandomString();
@@ -45,6 +45,21 @@ app.post("/urls", (req, res) => {
   urlDatabase[shortURL] = req.body.longURL;
   // redirect client to "/urls/:id", with their shortURL as the URL parameter
   res.redirect(`/urls/${shortURL}`);
+});
+
+// endpoint to delete URL from database
+app.post("/urls/:id/delete", (req, res) => {
+  const shortURL = req.params.id;
+  delete urlDatabase[shortURL];
+  res.redirect("/urls");
+});
+
+// endpoint to update longURL
+app.post("/urls/:id/update", (req, res) => {
+  const shortUrl = req.params.id;
+  const longUrl = req.body.longURL;
+  urlDatabase[shortUrl] = longUrl;
+  res.redirect("/urls");
 });
 
 // create endpoint that takes in URL parameters
