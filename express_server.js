@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
+const cookieParser = require("cookie-parser");
 
 app.set("view engine", "ejs"); // set ejs as the template engine
 
@@ -19,8 +20,14 @@ function generateRandomString() {
   return result;
 };
 
-// set up middleware to parse URL encoded data
+///////////MIDDLEWARE//////////////
+
+// parse URL encoded data
 app.use(express.urlencoded({ extended: true}));
+
+app.use(cookieParser());
+
+/////////////ENDPOINTS/////////////////
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -28,13 +35,17 @@ app.get("/", (req, res) => {
 
 // when client requests "/urls", render the "urls_index" template with urlDatabase
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { 
+    urls: urlDatabase,
+    username: req.cookies["username"]
+   };
   res.render("urls_index", templateVars);
 });
 
 // create endpoint that renders a webpage that allows users to submit their longURL to get a short one
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { username: req.cookies["username"] };
+  res.render("urls_new", templateVars);
 });
 
 // endpoint to create new shortURL
@@ -69,10 +80,20 @@ app.post("/urls/login", (req, res) => {
   res.redirect("/urls");
 });
 
+// logout endpoint
+app.post("/urls/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+});
+
 // create endpoint that takes in URL parameters
 app.get("/urls/:id", (req, res) => {
   // templateVars = { id: URL parameter(shortURL), longURL: longURL that matches the shortURL in our database}
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id]};
+  const templateVars = { 
+    id: req.params.id, 
+    longURL: urlDatabase[req.params.id],
+    username: req.cookies["username"]
+  };
   // render html from "urls_show"
   res.render("urls_show", templateVars);
 });
@@ -92,6 +113,9 @@ app.get("/urls.json", (req, res) => {
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
+
+
+//////////////////START SERVER///////////////////
 
 // start server, and log message to confirm it is running
 app.listen(PORT, () => {
