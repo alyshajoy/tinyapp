@@ -62,6 +62,13 @@ app.post("/urls/:id/update", (req, res) => {
   res.redirect("/urls");
 });
 
+// login endpoint
+app.post("/urls/login", (req, res) => {
+  const username = req.body.username;
+  res.cookie("username", username); // creates a cookie, username: login form input
+  res.redirect("/urls");
+});
+
 // create endpoint that takes in URL parameters
 app.get("/urls/:id", (req, res) => {
   // templateVars = { id: URL parameter(shortURL), longURL: longURL that matches the shortURL in our database}

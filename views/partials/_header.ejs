@@ -17,6 +17,20 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
+      <div class="ml-auto">
+        <form class="form-inline" action="/urls/login" method="POST">
+          <div class="form-group mb-2">
+            <input
+              class="form-control"
+              type="text"
+              name="username"
+              placeholder="Username"
+              style="width: 300px; margin: 5px"
+            />
+            <button type="submit" class="btn btn-outline-dark">Login</button>
+          </div>
+        </form>
+      </div>
     </div>
   </nav>
 </header>
