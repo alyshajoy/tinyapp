@@ -23,7 +23,7 @@ const users = {
 
 ////////////FUNCTIONS//////////////////
 
-// function that creates a 6 character long random string
+// create a 6 character long random string
 function generateRandomString() {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let result = "";
@@ -33,7 +33,7 @@ function generateRandomString() {
   return result;
 };
 
-// function that finds a user in the users object from its email
+// find a user in the users object from its email
 const findUserFromEmail = function(email) {
   for (let user in users) {
     if (users[user].email === email) {
@@ -96,23 +96,36 @@ app.post("/urls/:id/update", (req, res) => {
   res.redirect("/urls");
 });
 
-// logout endpoint
-app.post("/urls/logout", (req, res) => {
-  res.clearCookie("user_id");
-  res.redirect("/urls");
-});
-
 // render login page
 app.get("/login", (req, res) => {
   const templateVars = { users, req };
   res.render("login", templateVars);
 });
 
-// login endpoint
+// login form endpoint
 app.post("/login", (req, res) => {
-  const username = req.body.username;
-  res.cookie("username", username); // creates a cookie, username: login form input
+  const email = req.body.email;
+  const password = req.body.password;
+
+  const userFromEmail = findUserFromEmail(email);
+
+  if (!userFromEmail) { // check if email has been registered
+    res.status(403).send('You have not yet registered this email. <a href="/register">Register</a>');
+  };
+
+  if (userFromEmail.password !== password) { // check if password matches email
+    res.status(403).send('Email and password do not match. <a href="/login">Try again</a>');
+  };
+
+  const id = userFromEmail.id;
+  res.cookie("user_id", users[id].id); // creates a cookie with user object
   res.redirect("/urls");
+});
+
+// logout form endpoint
+app.post("/urls/logout", (req, res) => {
+  res.clearCookie("user_id");
+  res.redirect("/login");
 });
 
 // render registration page
