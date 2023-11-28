@@ -18,8 +18,13 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
       <div class="ml-auto">
-        <% if(username) {%>
-          <p>Logged in as: <%= username %></p>
+        <!-- check if user_id cookie exists, and if the data from it matches our database -->
+        <% let loggedInUser = null; %>
+        <% if (req.cookies.user_id && users[req.cookies.user_id]) { %>
+          <% loggedInUser = users[req.cookies.user_id]; %>
+        <% } %>
+        <% if(loggedInUser) {%>
+          <p>Logged in as: <%= loggedInUser.email %></p>
           <form method="POST" action=/urls/logout>
             <button type="submit" class="btn btn-outline-dark">Logout</button>
           </form>

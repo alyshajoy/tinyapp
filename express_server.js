@@ -5,9 +5,20 @@ const cookieParser = require("cookie-parser");
 
 app.set("view engine", "ejs"); // set ejs as the template engine
 
+
+/////////////DATA///////////////
+
 const urlDatabase = { // database for our app, shortURL: longURL
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
+};
+
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  }
 };
 
 // function that creates a 6 character long random string
@@ -37,14 +48,15 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = { 
     urls: urlDatabase,
-    username: req.cookies["username"]
+    users,
+    req
    };
   res.render("urls_index", templateVars);
 });
 
 // create endpoint that renders a webpage that allows users to submit their longURL to get a short one
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["username"] };
+  const templateVars = { users, req };
   res.render("urls_new", templateVars);
 });
 
@@ -82,14 +94,24 @@ app.post("/urls/login", (req, res) => {
 
 // logout endpoint
 app.post("/urls/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
 // render registration page
 app.get("/register", (req, res) => {
-  const templateVars = { username: req.cookies["username"] };
+  const templateVars = { users, req };
   res.render("register", templateVars);
+});
+
+// registration form endpoint
+app.post("/register", (req, res) => {
+  const id = generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password;
+  users[id] = { id, email, password }; // add new user to users object
+  res.cookie("user_id", users[id].id); // create cookie that allows user to remain logged in
+  res.redirect("/urls");
 });
 
 // create endpoint that takes in URL parameters
@@ -98,7 +120,8 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = { 
     id: req.params.id, 
     longURL: urlDatabase[req.params.id],
-    username: req.cookies["username"]
+    users,
+    req
   };
   // render html from "urls_show"
   res.render("urls_show", templateVars);
