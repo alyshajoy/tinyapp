@@ -29,18 +29,8 @@
             <button type="submit" class="btn btn-outline-dark">Logout</button>
           </form>
         <% } else { %>
-            <form class="form-inline" action="/urls/login" method="POST">
-              <div class="form-group mb-2">
-                <input
-                  class="form-control"
-                  type="text"
-                  name="username"
-                  placeholder="Username"
-                  style="width: 300px; margin: 5px"
-                />
-                <button type="submit" class="btn btn-outline-dark">Login</button>
-              </div>
-            </form>
+          <a class="navbar-brand" href="/login">Login</a>
+          <a class="navbar-brand" href="/register">Register</a>
         <% } %>
       </div>
     </div>

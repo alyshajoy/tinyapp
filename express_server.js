@@ -96,16 +96,22 @@ app.post("/urls/:id/update", (req, res) => {
   res.redirect("/urls");
 });
 
-// login endpoint
-app.post("/urls/login", (req, res) => {
-  const username = req.body.username;
-  res.cookie("username", username); // creates a cookie, username: login form input
-  res.redirect("/urls");
-});
-
 // logout endpoint
 app.post("/urls/logout", (req, res) => {
   res.clearCookie("user_id");
+  res.redirect("/urls");
+});
+
+// render login page
+app.get("/login", (req, res) => {
+  const templateVars = { users, req };
+  res.render("login", templateVars);
+});
+
+// login endpoint
+app.post("/login", (req, res) => {
+  const username = req.body.username;
+  res.cookie("username", username); // creates a cookie, username: login form input
   res.redirect("/urls");
 });
 
