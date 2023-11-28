@@ -21,6 +21,8 @@ const users = {
   }
 };
 
+////////////FUNCTIONS//////////////////
+
 // function that creates a 6 character long random string
 function generateRandomString() {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -31,6 +33,15 @@ function generateRandomString() {
   return result;
 };
 
+// function that finds a user in the users object from its email
+const findUserFromEmail = function(email) {
+  for (let user in users) {
+    if (users[user].email === email) {
+      return users[user];
+    };
+  };
+  return null;
+};
 ///////////MIDDLEWARE//////////////
 
 // parse URL encoded data
@@ -109,6 +120,16 @@ app.post("/register", (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+
+  if (email.length < 1 || password.length < 1) { // check to make sure both email and password fields are filled
+    res.status(400).send("Missing email or password");
+  };
+
+  const emailExists = findUserFromEmail(email); // check to see if email is already in database
+  if (emailExists) {
+    res.status(400).send("Email already exists");
+  };
+
   users[id] = { id, email, password }; // add new user to users object
   res.cookie("user_id", users[id].id); // create cookie that allows user to remain logged in
   res.redirect("/urls");
