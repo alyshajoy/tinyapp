@@ -86,6 +86,12 @@ app.post("/urls/logout", (req, res) => {
   res.redirect("/urls");
 });
 
+// render registration page
+app.get("/register", (req, res) => {
+  const templateVars = { username: req.cookies["username"] };
+  res.render("register", templateVars);
+});
+
 // create endpoint that takes in URL parameters
 app.get("/urls/:id", (req, res) => {
   // templateVars = { id: URL parameter(shortURL), longURL: longURL that matches the shortURL in our database}
