@@ -9,15 +9,21 @@ app.set("view engine", "ejs"); // set ejs as the template engine
 /////////////DATA///////////////
 
 const urlDatabase = { // database for our app, shortURL: longURL
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "aJ48lW",
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userID: "aJ48lW",
+  },
 };
 
 const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    password: "purple-monkey-dinosaur",
   }
 };
 
@@ -42,6 +48,19 @@ const findUserFromEmail = function(email) {
   };
   return null;
 };
+
+// create object that contains the urlDatabase info specific to the logged in user
+const urlsForUser = function(id) {
+  const userURLS = {};
+  for (let databaseID in urlDatabase) {
+    if (urlDatabase[databaseID].userID === id) {
+      userURLS[databaseID] = {longURL: urlDatabase[databaseID].longURL, userID: id};
+    }
+  };
+  return userURLS;
+};
+
+
 ///////////MIDDLEWARE//////////////
 
 // parse URL encoded data
@@ -51,14 +70,19 @@ app.use(cookieParser());
 
 /////////////ENDPOINTS/////////////////
 
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
 
 // when client requests "/urls", render the "urls_index" template with urlDatabase
 app.get("/urls", (req, res) => {
+  if (!req.cookies.user_id) {
+    res.send('You need to be logged in to see this content. <a href="/login">Login</a>');
+    return;
+  }
+
+  const id = req.cookies.user_id;
+  const userURLS = urlsForUser(id);
+
   const templateVars = { 
-    urls: urlDatabase,
+    urls: userURLS,
     users,
     req
    };
@@ -84,8 +108,8 @@ app.post("/urls", (req, res) => {
   }
 
   const shortURL = generateRandomString();  // create short URL to give to client
-  urlDatabase[shortURL] = req.body.longURL;  // save shortURL and longURL to database
-  console.log("urlDatabase:", urlDatabase);
+
+  urlDatabase[shortURL] = {longURL: req.body.longURL, userID: req.cookies.user_id};  // save shortURL, longURL, and userID to database
   
   res.redirect(`/urls/${shortURL}`);  // redirect client to "/urls/:id", with their shortURL as the URL parameter
 });
@@ -101,7 +125,7 @@ app.post("/urls/:id/delete", (req, res) => {
 app.post("/urls/:id/update", (req, res) => {
   const shortUrl = req.params.id;
   const longUrl = req.body.longURL;
-  urlDatabase[shortUrl] = longUrl;
+  urlDatabase[shortUrl].longURL = longUrl; // change database to have new longURL
   res.redirect("/urls");
 });
 
@@ -174,23 +198,45 @@ app.post("/register", (req, res) => {
   res.redirect("/urls");
 });
 
-// create endpoint that takes in URL parameters
+// create endpoint that takes in URL parameters (urls_show)
 app.get("/urls/:id", (req, res) => {
-  const parameters = req.params.id;
 
-  if (!urlDatabase[parameters]) {  // if shortURL given isn't in database, send user an error message
+  if (!req.cookies.user_id) {  // if user isn't logged in, send them message telling them to log in
+    res.send('You must be logged in to access this page. <a href="/login">Login</a>');
+    return;
+  }
+
+  const urlParameters = req.params.id;
+
+  if (!urlDatabase[urlParameters]) {  // if shortURL given isn't in database, send user an error message
     res.send('ShortURL does not yet exist. Create a new shortURL here: <a href="/urls/new">Create ShortURL</a>');
     return;
   }
 
+  const userURLS = urlsForUser(req.cookies.user_id);
+  if (!userURLS[urlParameters]) {
+    res.send('This shortURL belongs to someone else! Create your own shortURL here: <a href="/urls/new">Create ShortURL</a>');
+    return;
+  }
+
   const templateVars = { 
-    id: parameters, 
-    longURL: urlDatabase[req.params.id],
+    id: urlParameters, 
+    longURL: urlDatabase[req.params.id].longURL,
     users,
     req
   };
   res.render("urls_show", templateVars);
 });
+
+// const urlsForUser = function(id) {
+//   const userURLS = {};
+//   for (let databaseID in urlDatabase) {
+//     if (urlDatabase[databaseID].userID === id) {
+//       userURLS[databaseID] = {longURL: urlDatabase[databaseID].longURL, userID: id};
+//     }
+//   };
+//   return userURLS;
+// };
 
 // endpoint that redirects client to the website the shortURL given matches up to in URLdatabase
 app.get("/u/:id", (req, res) => {
@@ -206,6 +252,11 @@ app.get("/urls.json", (req, res) => {
 // send basic html to client when /hello is requested
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
+});
+
+// send message to client when / is requested
+app.get("/", (req, res) => {
+  res.send("Hello!");
 });
 
 
