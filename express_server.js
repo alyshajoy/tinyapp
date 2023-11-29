@@ -85,6 +85,7 @@ app.post("/urls", (req, res) => {
 
   const shortURL = generateRandomString();  // create short URL to give to client
   urlDatabase[shortURL] = req.body.longURL;  // save shortURL and longURL to database
+  console.log("urlDatabase:", urlDatabase);
   
   res.redirect(`/urls/${shortURL}`);  // redirect client to "/urls/:id", with their shortURL as the URL parameter
 });
@@ -175,14 +176,19 @@ app.post("/register", (req, res) => {
 
 // create endpoint that takes in URL parameters
 app.get("/urls/:id", (req, res) => {
-  // templateVars = { id: URL parameter(shortURL), longURL: longURL that matches the shortURL in our database}
+  const parameters = req.params.id;
+
+  if (!urlDatabase[parameters]) {  // if shortURL given isn't in database, send user an error message
+    res.send('ShortURL does not yet exist. Create a new shortURL here: <a href="/urls/new">Create ShortURL</a>');
+    return;
+  }
+
   const templateVars = { 
-    id: req.params.id, 
+    id: parameters, 
     longURL: urlDatabase[req.params.id],
     users,
     req
   };
-  // render html from "urls_show"
   res.render("urls_show", templateVars);
 });
 
