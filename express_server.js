@@ -68,17 +68,25 @@ app.get("/urls", (req, res) => {
 // create endpoint that renders a webpage that allows users to submit their longURL to get a short one
 app.get("/urls/new", (req, res) => {
   const templateVars = { users, req };
+  if (!req.cookies.user_id) {   // if user isn't logged in, redirect them to login page
+    res.redirect("/login");
+    return;
+  }
   res.render("urls_new", templateVars);
 });
 
 // endpoint to create new shortURL
 app.post("/urls", (req, res) => {
-  // create short URL to give to client
-  const shortURL = generateRandomString();
-  // save shortURL and longURL to database
-  urlDatabase[shortURL] = req.body.longURL;
-  // redirect client to "/urls/:id", with their shortURL as the URL parameter
-  res.redirect(`/urls/${shortURL}`);
+  
+  if (!req.cookies.user_id) {   // check if user is logged in - if not, send them a message telling them to log in
+    res.send('You need to log in to access this service. <a href="/login">Login</a>');
+    return;
+  }
+
+  const shortURL = generateRandomString();  // create short URL to give to client
+  urlDatabase[shortURL] = req.body.longURL;  // save shortURL and longURL to database
+  
+  res.redirect(`/urls/${shortURL}`);  // redirect client to "/urls/:id", with their shortURL as the URL parameter
 });
 
 // endpoint to delete URL from database
@@ -99,6 +107,9 @@ app.post("/urls/:id/update", (req, res) => {
 // render login page
 app.get("/login", (req, res) => {
   const templateVars = { users, req };
+  if (req.cookies.user_id) {
+    res.redirect("/urls");
+  }
   res.render("login", templateVars);
 });
 
@@ -111,10 +122,12 @@ app.post("/login", (req, res) => {
 
   if (!userFromEmail) { // check if email has been registered
     res.status(403).send('You have not yet registered this email. <a href="/register">Register</a>');
+    return;
   };
 
   if (userFromEmail.password !== password) { // check if password matches email
     res.status(403).send('Email and password do not match. <a href="/login">Try again</a>');
+    return;
   };
 
   const id = userFromEmail.id;
@@ -131,6 +144,10 @@ app.post("/urls/logout", (req, res) => {
 // render registration page
 app.get("/register", (req, res) => {
   const templateVars = { users, req };
+  if (req.cookies.user_id) {
+    res.redirect("/urls");
+    return;
+  }
   res.render("register", templateVars);
 });
 
@@ -142,11 +159,13 @@ app.post("/register", (req, res) => {
 
   if (email.length < 1 || password.length < 1) { // check to make sure both email and password fields are filled
     res.status(400).send("Missing email or password");
+    return;
   };
 
   const emailExists = findUserFromEmail(email); // check to see if email is already in database
   if (emailExists) {
     res.status(400).send("Email already exists");
+    return;
   };
 
   users[id] = { id, email, password }; // add new user to users object
