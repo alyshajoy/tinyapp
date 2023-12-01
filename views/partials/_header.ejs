@@ -20,8 +20,8 @@
       <div class="ml-auto">
         <!-- check if user_id cookie exists, and if the data from it matches our database -->
         <% let loggedInUser = null; %>
-        <% if (req.cookies.user_id && users[req.cookies.user_id]) { %>
-          <% loggedInUser = users[req.cookies.user_id]; %>
+        <% if (req.session.user_id && users[req.session.user_id]) { %>
+          <% loggedInUser = users[req.session.user_id]; %>
         <% } %>
         <% if(loggedInUser) {%>
           <p>Logged in as: <%= loggedInUser.email %></p>
