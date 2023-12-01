@@ -116,15 +116,59 @@ app.post("/urls", (req, res) => {
 
 // endpoint to delete URL from database
 app.post("/urls/:id/delete", (req, res) => {
+
+  const id = req.cookies.user_id;
   const shortURL = req.params.id;
+
+  if (!id) { // ensure user is logged in before they delete a URL
+    res.send('You need to log in to delete URLS. <a href="/login">Log In</a>');
+    return;
+  }
+
+  if (!urlDatabase[shortURL]) { // ensure the URL that user is requesting to delete exists
+    res.send('The URL you are trying to delete does not exist. Create a new shortURL here: <a href="/urls/new">New URL</a>');
+    return;
+  }
+
+  if (urlDatabase[shortURL].userID !== id) { // check if url they want to delete belongs to user
+    res.send('You cannot delete the urls of other users. Log in to your own account here: <a href="/login">Log In</a>');
+    return;
+  }
+
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
 
+// const urlDatabase = { // database for our app, shortURL: longURL
+//   "b2xVn2": {
+//     longURL: "http://www.lighthouselabs.ca",
+//     userID: "aJ48lW",
+//   },
+//   "9sm5xK": {
+//     longURL: "http://www.google.com",
+//     userID: "aJ48lW",
+//   },
+// };
+
+// const users = {
+//   userRandomID: {
+//     id: "userRandomID",
+//     email: "user@example.com",
+//     password: "purple-monkey-dinosaur",
+//   }
+// };
+
 // endpoint to update longURL
 app.post("/urls/:id/update", (req, res) => {
+  const id = req.cookies.user_id;
   const shortUrl = req.params.id;
   const longUrl = req.body.longURL;
+
+  if (urlDatabase[shortUrl].userID !== id) { // check if url they want to update belongs to user
+    res.send('You cannot edit the urls of other users. Log in to your own account here: <a href="/login">Log In</a>');
+    return;
+  }
+
   urlDatabase[shortUrl].longURL = longUrl; // change database to have new longURL
   res.redirect("/urls");
 });
@@ -134,6 +178,7 @@ app.get("/login", (req, res) => {
   const templateVars = { users, req };
   if (req.cookies.user_id) {
     res.redirect("/urls");
+    return;
   }
   res.render("login", templateVars);
 });
@@ -227,16 +272,6 @@ app.get("/urls/:id", (req, res) => {
   };
   res.render("urls_show", templateVars);
 });
-
-// const urlsForUser = function(id) {
-//   const userURLS = {};
-//   for (let databaseID in urlDatabase) {
-//     if (urlDatabase[databaseID].userID === id) {
-//       userURLS[databaseID] = {longURL: urlDatabase[databaseID].longURL, userID: id};
-//     }
-//   };
-//   return userURLS;
-// };
 
 // endpoint that redirects client to the website the shortURL given matches up to in URLdatabase
 app.get("/u/:id", (req, res) => {
