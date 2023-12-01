@@ -1,9 +1,9 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-// const cookieParser = require("cookie-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
+const { findUserFromEmail } = require("./helpers.js");
 
 app.set("view engine", "ejs"); // set ejs as the template engine
 
@@ -41,16 +41,6 @@ function generateRandomString() {
   return result;
 };
 
-// find a user in the users object from its email
-const findUserFromEmail = function(email) {
-  for (let user in users) {
-    if (users[user].email === email) {
-      return users[user];
-    };
-  };
-  return null;
-};
-
 // create object that contains the urlDatabase info specific to the logged in user
 const urlsForUser = function(id) {
   const userURLS = {};
@@ -67,8 +57,6 @@ const urlsForUser = function(id) {
 
 // parse URL encoded data
 app.use(express.urlencoded({ extended: true}));
-
-// app.use(cookieParser());
 
 const key1 = generateRandomString();
 const key2 = generateRandomString();
@@ -187,7 +175,7 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  const userFromEmail = findUserFromEmail(email);
+  const userFromEmail = findUserFromEmail(email, users);
 
   if (!userFromEmail) { // check if email has been registered
     res.status(403).send('You have not yet registered this email. <a href="/register">Register</a>');
@@ -233,7 +221,7 @@ app.post("/register", (req, res) => {
     return;
   };
 
-  const emailExists = findUserFromEmail(email); // check to see if email is already in database
+  const emailExists = findUserFromEmail(email, users); // check to see if email is already in database
   if (emailExists) {
     res.status(400).send("Email already exists");
     return;
