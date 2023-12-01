@@ -32,7 +32,7 @@ const users = {
 ////////////FUNCTIONS//////////////////
 
 // create a 6 character long random string
-function generateRandomString() {
+const generateRandomString = function() {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let result = "";
   for (let i = 0; i < 6; i++) {
@@ -48,7 +48,7 @@ const urlsForUser = function(id) {
     if (urlDatabase[databaseID].userID === id) {
       userURLS[databaseID] = {longURL: urlDatabase[databaseID].longURL, userID: id};
     }
-  };
+  }
   return userURLS;
 };
 
@@ -80,11 +80,11 @@ app.get("/urls", (req, res) => {
   const id = req.session.user_id;
   const userURLS = urlsForUser(id);
 
-  const templateVars = { 
+  const templateVars = {
     urls: userURLS,
     users,
     req
-   };
+  };
   res.render("urls_index", templateVars);
 });
 
@@ -143,7 +143,6 @@ app.post("/urls/:id/update", (req, res) => {
   const id = req.session.user_id;
   const shortUrl = req.params.id;
   const longUrl = req.body.longURL;
-  console.log("req.body:", req.body);
 
   if (urlDatabase[shortUrl].userID !== id) { // check if url they want to update belongs to user
     res.send('You cannot edit the urls of other users. Log in to your own account here: <a href="/login">Log In</a>');
@@ -180,13 +179,13 @@ app.post("/login", (req, res) => {
   if (!userFromEmail) { // check if email has been registered
     res.status(403).send('You have not yet registered this email. <a href="/register">Register</a>');
     return;
-  };
+  }
 
   const passwordCheck = bcrypt.compareSync(password, userFromEmail.hashedPassword); // check if passwords are a match
-  if (!passwordCheck) { 
+  if (!passwordCheck) {
     res.status(403).send('Email and password do not match. <a href="/login">Try again</a>');
     return;
-  };
+  }
 
   const id = userFromEmail.id;
   req.session.user_id = users[id].id; // used to be res.cookie("user_id", users[id].id) // creates a cookie with user object
@@ -217,18 +216,17 @@ app.post("/register", (req, res) => {
   const hashedPassword = bcrypt.hashSync(password, 10);
 
   if (email.length < 1 || password.length < 1) { // check to make sure both email and password fields are filled
-    res.status(400).send("Missing email or password");
+    res.status(400).send('Missing email or password. <a href="/login">Try Again</a>');
     return;
-  };
+  }
 
   const emailExists = findUserFromEmail(email, users); // check to see if email is already in database
   if (emailExists) {
-    res.status(400).send("Email already exists");
+    res.status(400).send('Email already exists. <a href="/login">Try Again</a>');
     return;
-  };
+  }
 
   users[id] = { id, email, hashedPassword }; // add new user to users object
-  console.log("user database:", users);
   req.session.user_id = users[id].id; // create cookie that allows user to remain logged in
   res.redirect("/urls");
 });
@@ -254,8 +252,8 @@ app.get("/urls/:id", (req, res) => {
     return;
   }
 
-  const templateVars = { 
-    id: urlParameters, 
+  const templateVars = {
+    id: urlParameters,
     longURL: urlDatabase[req.params.id].longURL,
     users,
     req
@@ -266,7 +264,7 @@ app.get("/urls/:id", (req, res) => {
 // endpoint that redirects client to the website the shortURL given matches up to in URLdatabase
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
-  res.redirect(`${urlDatabase[shortURL]}`);
+  res.redirect(`https://${urlDatabase[shortURL].longURL}`);
 });
 
 // endpoint that gives client json data for /urls
@@ -279,9 +277,13 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-// send message to client when / is requested
+// when / is requested, logged in is redirected to /urls, not logged in is redirected to login page
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  if (req.session.user_id) {
+    res.redirect("/urls");
+    return;
+  }
+  res.redirect("/login");
 });
 
 
