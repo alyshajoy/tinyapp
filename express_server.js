@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs");
 
 app.set("view engine", "ejs"); // set ejs as the template engine
 
@@ -139,25 +140,6 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-// const urlDatabase = { // database for our app, shortURL: longURL
-//   "b2xVn2": {
-//     longURL: "http://www.lighthouselabs.ca",
-//     userID: "aJ48lW",
-//   },
-//   "9sm5xK": {
-//     longURL: "http://www.google.com",
-//     userID: "aJ48lW",
-//   },
-// };
-
-// const users = {
-//   userRandomID: {
-//     id: "userRandomID",
-//     email: "user@example.com",
-//     password: "purple-monkey-dinosaur",
-//   }
-// };
-
 // endpoint to update longURL
 app.post("/urls/:id/update", (req, res) => {
   const id = req.cookies.user_id;
@@ -195,7 +177,8 @@ app.post("/login", (req, res) => {
     return;
   };
 
-  if (userFromEmail.password !== password) { // check if password matches email
+  const passwordCheck = bcrypt.compareSync(password, userFromEmail.hashedPassword); // check if passwords are a match
+  if (!passwordCheck) { 
     res.status(403).send('Email and password do not match. <a href="/login">Try again</a>');
     return;
   };
@@ -226,6 +209,7 @@ app.post("/register", (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
 
   if (email.length < 1 || password.length < 1) { // check to make sure both email and password fields are filled
     res.status(400).send("Missing email or password");
@@ -238,7 +222,8 @@ app.post("/register", (req, res) => {
     return;
   };
 
-  users[id] = { id, email, password }; // add new user to users object
+  users[id] = { id, email, hashedPassword }; // add new user to users object
+  console.log("user database:", users);
   res.cookie("user_id", users[id].id); // create cookie that allows user to remain logged in
   res.redirect("/urls");
 });
