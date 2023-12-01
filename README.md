@@ -4,8 +4,8 @@ TinyApp is a dynamic full-stack web application, developed using Node.js and Exp
 
 ## Final Product
 
-!["Keep track of all your shortened URLS!"](./docs/urls-page.png)
-!["Includes login functionality."](./docs/login-page.png)
+!["Keep track of all your shortened URLS!"](https://github.com/alyshajoy/tinyapp/blob/main/docs/urls-page.png?raw=true)
+!["Includes login functionality."](https://github.com/alyshajoy/tinyapp/blob/main/docs/login-page.png?raw=true)
 
 ## Dependencies
 
