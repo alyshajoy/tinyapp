@@ -4,53 +4,9 @@ const PORT = 8080; // default port 8080
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 const { findUserFromEmail, generateRandomString, urlsForUser } = require("./helpers.js");
+const { urlDatabase, users } = require("./database.js");
 
 app.set("view engine", "ejs"); // set ejs as the template engine
-
-
-/////////////DATA///////////////
-
-const urlDatabase = { // database for our app, shortURL: longURL
-  "b2xVn2": {
-    longURL: "http://www.lighthouselabs.ca",
-    userID: "aJ48lW",
-  },
-  "9sm5xK": {
-    longURL: "http://www.google.com",
-    userID: "aJ48lW",
-  },
-};
-
-const users = {
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur",
-  }
-};
-
-////////////FUNCTIONS//////////////////
-
-// // create a 6 character long random string
-// const generateRandomString = function() {
-//   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-//   let result = "";
-//   for (let i = 0; i < 6; i++) {
-//     result += characters.charAt(Math.floor(Math.random() * characters.length));
-//   }
-//   return result;
-// };
-
-// // create object that contains the urlDatabase info specific to the logged in user
-// const urlsForUser = function(id) {
-//   const userURLS = {};
-//   for (let databaseID in urlDatabase) {
-//     if (urlDatabase[databaseID].userID === id) {
-//       userURLS[databaseID] = {longURL: urlDatabase[databaseID].longURL, userID: id};
-//     }
-//   }
-//   return userURLS;
-// };
 
 
 ///////////MIDDLEWARE//////////////

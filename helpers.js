@@ -1,3 +1,5 @@
+const { urlDatabase } = require("./database.js");
+
 // find a user in the users object from its email
 const findUserFromEmail = function(email, database) {
   for (let user in database) {
