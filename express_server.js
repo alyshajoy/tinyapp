@@ -95,7 +95,7 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 // endpoint to update longURL
-app.post("/urls/:id/update", (req, res) => {
+app.post("/urls/:id", (req, res) => {
   const id = req.session.user_id;
   const shortUrl = req.params.id;
   const longUrl = req.body.longURL;
