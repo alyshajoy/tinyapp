@@ -37,9 +37,7 @@
               <td><a href="/urls/<%= id %>"><%= id %></a></td>
               <td><%= urls[id].longURL %></td>
               <td>
-                <form method="POST" action=<%= `/urls/${id}/edit` %>>
-                  <button type="submit" class="btn btn-outline-primary">Edit</button>
-                </form>
+                <a href="/urls/<%= id %>" type="submit" class="btn btn-outline-primary">Edit</a>
               </td>
               <td>
                 <form method="POST" action=<%= `/urls/${id}/delete` %>>
@@ -50,7 +48,7 @@
           <% } %>
         </tbody>
       </table>
-      <a href="/urls/new">Create a New Short Link</a>
+      <a href="/urls/new">Create a New Short URL</a>
     </main>
     <!-- Bootstrap JS -->
     <script

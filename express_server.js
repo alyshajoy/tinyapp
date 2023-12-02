@@ -46,7 +46,10 @@ app.get("/urls", (req, res) => {
 
 // create endpoint that renders a webpage that allows users to submit their longURL to get a short one
 app.get("/urls/new", (req, res) => {
-  const templateVars = { users, req };
+  const templateVars = { 
+    users, 
+    req 
+  };
   if (!req.session.user_id) {   // if user isn't logged in, redirect them to login page
     res.redirect("/login");
     return;
@@ -64,7 +67,14 @@ app.post("/urls", (req, res) => {
 
   const shortURL = generateRandomString();  // create short URL to give to client
 
-  urlDatabase[shortURL] = {longURL: req.body.longURL, userID: req.session.user_id};  // save shortURL, longURL, and userID to database
+  if (req.body.longURL === "") {
+    res.send('You forgot to enter a URL! Try again <a href="/urls/new">here</a>!');
+    return;
+  }
+  urlDatabase[shortURL] = {
+    longURL: req.body.longURL, 
+    userID: req.session.user_id
+  };  // save shortURL, longURL, and userID to database
   
   res.redirect(`/urls/${shortURL}`);  // redirect client to "/urls/:id", with their shortURL as the URL parameter
 });
@@ -94,30 +104,12 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-// endpoint to update longURL
-app.post("/urls/:id", (req, res) => {
-  const id = req.session.user_id;
-  const shortUrl = req.params.id;
-  const longUrl = req.body.longURL;
-
-  if (urlDatabase[shortUrl].userID !== id) { // check if url they want to update belongs to user
-    res.send('You cannot edit the urls of other users. Log in to your own account here: <a href="/login">Log In</a>');
-    return;
-  }
-
-  urlDatabase[shortUrl].longURL = longUrl; // change database to have new longURL
-  res.redirect("/urls");
-});
-
-// endpoint that directs users to the update page when they click the edit button
-app.post("/urls/:id/edit", (req, res) => {
-  const shortURL = req.params.id;
-  res.redirect(`/urls/${shortURL}`);
-});
-
 // render login page
 app.get("/login", (req, res) => {
-  const templateVars = { users, req };
+  const templateVars = { 
+    users, 
+    req 
+  };
   if (req.session.user_id) {
     res.redirect("/urls");
     return;
@@ -156,7 +148,10 @@ app.post("/urls/logout", (req, res) => {
 
 // render registration page
 app.get("/register", (req, res) => {
-  const templateVars = { users, req };
+  const templateVars = {
+    users,
+    req
+  };
   if (req.session.user_id) {
     res.redirect("/urls");
     return;
@@ -182,7 +177,12 @@ app.post("/register", (req, res) => {
     return;
   }
 
-  users[id] = { id, email, hashedPassword }; // add new user to users object
+  // add new user to users object
+  users[id] = {
+    id,
+    email,
+    hashedPassword
+  };
   req.session.user_id = users[id].id; // create cookie that allows user to remain logged in
   res.redirect("/urls");
 });
@@ -217,10 +217,52 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+// endpoint to update longURL
+app.post("/urls/:id", (req, res) => {
+  const id = req.session.user_id;
+  const shortUrl = req.params.id;
+  const longUrl = req.body.longURL;
+
+  if (urlDatabase[shortUrl].userID !== id) { // check if url they want to update belongs to user
+    res.send('You cannot edit the urls of other users. Log in to your own account here: <a href="/login">Log In</a>');
+    return;
+  }
+
+  if (longUrl === "") {
+    res.send(`You forgot to enter a new URL! Try again <a href="/urls/${shortUrl}">here</a>!`);
+    return;
+  }
+
+  urlDatabase[shortUrl].longURL = longUrl; // change database to have new longURL
+  res.redirect("/urls");
+});
+
 // endpoint that redirects client to the website the shortURL given matches up to in URLdatabase
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
-  res.redirect(`https://${urlDatabase[shortURL].longURL}`);
+
+  if (!users.shortURL) {
+    res.send(`You do not have a longURL associated with the shortURL you have entered. Create a new shortURL <a href="/urls/new">here</a>!`);
+    return;
+  }
+  const longURL = urlDatabase[shortURL].longURL;
+  
+  const findProtocol = function (url) { // function that checks to see if protocol was included in inputed URL
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const includesProtocol = findProtocol(longURL);
+  
+  if (!includesProtocol) { // if protocol wasn't included, add protocol to the URL
+    res.redirect(`https://${longURL}`);
+    return;
+  };
+
+  res.redirect(`${longURL}`);
 });
 
 // endpoint that gives client json data for /urls
