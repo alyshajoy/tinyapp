@@ -141,7 +141,7 @@ app.post("/login", (req, res) => {
 });
 
 // logout form endpoint
-app.post("/urls/logout", (req, res) => {
+app.post("/logout", (req, res) => {
   req.session = null; // used to be res.clearCookie("user_id") -> clears cookie(s)
   res.redirect("/login");
 });
@@ -240,9 +240,12 @@ app.post("/urls/:id", (req, res) => {
 // endpoint that redirects client to the website the shortURL given matches up to in URLdatabase
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
+  console.log("shortURL", shortURL);
+  console.log("urls:", urlDatabase);
 
-  if (!users.shortURL) {
+  if (!urlDatabase[shortURL]) {
     res.send(`You do not have a longURL associated with the shortURL you have entered. Create a new shortURL <a href="/urls/new">here</a>!`);
+    console.log(urlDatabase.shortURL);
     return;
   }
   const longURL = urlDatabase[shortURL].longURL;
