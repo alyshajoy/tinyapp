@@ -240,8 +240,6 @@ app.post("/urls/:id", (req, res) => {
 // endpoint that redirects client to the website the shortURL given matches up to in URLdatabase
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
-  console.log("shortURL", shortURL);
-  console.log("urls:", urlDatabase);
 
   if (!urlDatabase[shortURL]) {
     res.send(`You do not have a longURL associated with the shortURL you have entered. Create a new shortURL <a href="/urls/new">here</a>!`);
